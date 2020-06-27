@@ -1,0 +1,6 @@
+*.har
+*.log
+dist/*
+.npm
+node_modules
+.env
