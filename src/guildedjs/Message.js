@@ -7,12 +7,18 @@ import sessionData, { USER_AGENT } from './session';
  */
 function parseNode(node) {
   let text = '';
+  let attachments = [];
   if (node.nodes) {
     for (let i = 0; i < node.nodes.length; i += 1) {
       if (text) {
         text += ' ';
       }
-      text += parseNode(node.nodes[i]);
+      const {
+        attachments: attachmentsChild,
+        text: textChild,
+      } = parseNode(node.nodes[i]);
+      text += textChild;
+      attachments = attachments.concat(attachmentsChild);
     }
   }
   if (node.leaves) {
@@ -20,7 +26,12 @@ function parseNode(node) {
       text += ' ';
     }
     for (let i = 0; i < node.leaves.length; i += 1) {
-      text += parseNode(node.leaves[i]);
+      const {
+        attachments: attachmentsChild,
+        text: textChild,
+      } = parseNode(node.leaves[i]);
+      text += textChild;
+      attachments = attachments.concat(attachmentsChild);
     }
   }
   if (node.text) {
@@ -29,51 +40,160 @@ function parseNode(node) {
     }
     text += node.text;
   }
-  return text;
+  if (node.type && node.type === 'image') {
+    attachments.push(node.data.src);
+  }
+  return {
+    attachments,
+    text,
+  }
 }
 
 
 class Message {
-  constructor(data, channel = null, guild = null) {
+  constructor(
+    data,
+    channel = null,
+    guild = null,
+  ) {
+    this.guild = guild;
+    this.channel = channel;
+
     if (typeof data === 'string') {
+      const newdata = {
+        text: data,
+      };
+      data = newdata;
+    }
+
+    if (data.text || data.attachments || data.mentions) {
+      console.log('Creating message', data);
       // create new message from string
       this.id = uuidv4();
-      this.guild = guild;
-      this.channel = channel;
-      this.text = data;
+      let text = '';
+      const nodes = [];
+      if (data.text || data.mentions) {
+        const textnode = {
+            object: 'block',
+            type: 'paragraph',
+            data: {},
+            nodes: [],
+        }
+        if (data.mentions && data.mentions.length) {
+          // add mentions
+          for (let i = 0; i < data.mentions.length; i += 1){
+            const mention = data.mentions[i];
+            if (text) {
+              text += ' ';
+            }
+            text += `@{mention}`;
+            textnode.nodes.push({
+              data: {
+                mention: {
+                  type: mention,
+                  name: mention,
+                  matcher: `@${mention}`,
+                  id: mention,
+                  description: `Ping @${mention}`,
+                  color: '#f5c400',
+                },
+              },
+              nodes: [
+                Message.createTextNode(`@${mention}`),
+              ],
+              type: 'mention',
+              object: 'inline',
+            });
+          }
+        }
+        if (data.text) {
+          if (text) {
+            text += ' ';
+          }
+          text += data.text;
+          // add text
+          textnode.nodes.push(Message.createTextNode(data.text));
+        }
+        nodes.push(textnode);
+      }
+      if (data.attachments && data.attachments.length) {
+        // add image
+        for (let i = 0; i < data.attachments.length; i += 1) {
+          const attachment = data.attachments[i];
+          let url = '';
+          let atttext = '';
+          if (typeof attachment === 'string') {
+            url = attachment;
+          } else {
+            url = attachment.url;
+            if (!url) {
+              continue;
+            }
+            if (attachment.text) {
+              atttext = attachment.text;
+              if (text) {
+                text += ' ';
+              }
+              text += atttext;
+            }
+          }
+          
+          const attachmentNode = {
+            object: 'block',
+            type: 'image',
+            data: {
+              src: url,
+            },
+            nodes: [
+              Message.createTextNode(atttext),
+            ],
+          }
+          nodes.push(attachmentNode);
+        }
+      }
       this.content = {
         document: {
           data: {},
-          nodes: [
-            {
-              object: 'block',
-              type: 'paragraph',
-              data: {},
-              nodes: [
-                {
-                  leaves: [
-                    {
-                      object: 'leaf',
-                      marks: [],
-                      text: data,
-                    }
-                  ],
-                  object: 'text',
-                },
-              ],
-            }
-          ],
+          nodes,
           object: 'document',
         },
         object: 'value',
       }
-    } else {
+      this.text = text;
+    } else if (data.content) {
       // create message from ChatMessageCreated package
       this.id = data.id;
-      this.guild = guild;
-      this.channel = channel;
       this.content = data.content;
-      this.text = parseNode(data.content.document);
+      const {
+        text,
+        attachments,
+      } = parseNode(data.content.document);
+      this.text = text;
+      this.attachments = attachments;
+    }
+  }
+
+  static createTextNode(text = null) {
+    if (!text) {
+      text = '';
+    }
+    return {
+      leaves: [
+        {
+          object: 'leaf',
+          marks: [],
+          text: text,
+        }
+      ],
+      object: 'text'
+    }
+  }
+
+  reply(data) {
+    if (this.channel) {
+      this.channel.send(data);
+    } else {
+      throw new Error('This message has no channel defined.');
     }
   }
 }
