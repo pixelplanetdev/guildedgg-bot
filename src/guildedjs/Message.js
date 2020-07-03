@@ -55,7 +55,9 @@ class Message {
     data,
     channel = null,
     guild = null,
+    user = null,
   ) {
+    this.user = user;
     this.guild = guild;
     this.channel = channel;
 
@@ -123,7 +125,7 @@ class Message {
           let url = '';
           let atttext = '';
           if (typeof attachment === 'string') {
-            url = attachment;
+            continue;
           } else {
             url = attachment.url;
             if (!url) {
@@ -173,10 +175,7 @@ class Message {
     }
   }
 
-  static createTextNode(text = null) {
-    if (!text) {
-      text = '';
-    }
+  static createTextNode(text = '') {
     return {
       leaves: [
         {
@@ -186,6 +185,26 @@ class Message {
         }
       ],
       object: 'text'
+    }
+  }
+
+  async addAttachment(url, text = '') {
+    console.log(this.content);
+    this.content.document.nodes.push({
+      object: 'block',
+      type: 'image',
+      data: {
+        src: url,
+      },
+      nodes: [
+        Message.createTextNode(text),
+      ],
+    });
+    if (text) {
+      if (this.text) {
+        this.text += ' ';
+      }
+      this.text += text;
     }
   }
 

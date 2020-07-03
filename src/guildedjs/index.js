@@ -13,6 +13,7 @@ import SocketIO from 'socket.io-client';
 import TextChannel from './Channel';
 import Message from './Message';
 import Guild from './Guild';
+import users from './User';
 import sessionData, { USER_AGENT } from './session';
 
 const LOGIN_URL = 'https://api.guilded.gg/login';
@@ -47,7 +48,7 @@ class Guilded extends EventEmitter {
   }
 
   log(message) {
-    this.verbose && console.log('Guildedjs', message);
+    this.verbose && console.log('[Guildedjs]', message);
   }
 
   async connect(email, password) {
@@ -133,15 +134,23 @@ class Guilded extends EventEmitter {
     });
 
     socket.on('ChatMessageCreated', (msg) => {
-      this.log("Received Chat message");
       const {
         channelId,
         teamId,
+        createdBy,
         message,
       } = msg;
       const guild = this.getGuild(teamId);
       const channel = this.getChannel(channelId, guild);
-      this.emit('message', new Message(message, channel, guild));
+      const user = users.getUser(createdBy);
+      const msgm = new Message(message, channel, guild, user);
+      if (msgm.attachments.length) {
+        this.log(`Received: ${user.name}: ${msgm.text} with ${msgm.attachments.length} attachments:`);
+        msgm.attachments.forEach((att) => this.log(att));
+      } else {
+        this.log(`Received: ${user.name}: ${msgm.text}`);
+      }
+      this.emit('message', msgm);
     });
 
     this.socket = socket;

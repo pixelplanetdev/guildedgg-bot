@@ -18,7 +18,10 @@ class Users {
   getUser(id) {
     let user = this.users.get(id);
     if (!user) {
-      user = { id };
+      user = {
+        id,
+        name: id,
+      };
     }
     return user;
   }

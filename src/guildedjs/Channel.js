@@ -2,6 +2,9 @@ import fetch from 'node-fetch';
 
 import Message from './Message';
 import sessionData, { USER_AGENT } from './session';
+import {
+  uploadImage,
+} from './utils';
 
 const API_URL = 'https://api.guilded.gg/channels'
 const REFERER = 'https://www.guilded.gg';
@@ -17,7 +20,43 @@ class TextChannel {
   }
 
   async send(data) {
+
+    /* upload attachments to guilded */
+    if (data.attachments) {
+      const attachmentUrls = [];
+      for (let i = 0; i < data.attachments.length; i += 1) {
+        const attachment = data.attachments[i];
+        let url = null;
+        const image = (typeof attachment === 'string')
+          ? attachment
+          : attachment.image;
+
+        if (typeof image === 'string') {
+          if (image.indexOf('http') != -1) {
+            // url
+            url = image;
+          } else {
+            // local path
+            url = await uploadImage(image);
+          }
+        } else {
+          // buffer
+          url = await uploadImage(image);
+        }
+
+        if (url) {
+          attachmentUrls.push({
+            url,
+            text: attachment.text || '',
+          });
+        }
+      }
+      data.attachments = attachmentUrls;
+    }
+
+    /* construct and send message */
     const msg = new Message(data, this);
+
     const body = {
       confirmed: false,
       messageId: msg.id,

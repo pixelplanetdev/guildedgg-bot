@@ -10,6 +10,8 @@
     "build": "webpack"
   },
   "dependencies": {
+    "canvas": "^2.6.1",
+    "form-data": "^3.0.0",
     "node-fetch": "^2.6.0",
     "socket.io-client": "^2.3.0",
     "uuid": "^8.2.0"
