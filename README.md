@@ -17,3 +17,10 @@ npm start -- email@mail.com yourguildedpassword
 If you want to develop your own bot, look into `src/index.js` how it's used.
 The `src/guildedjs` module provides the interface.
 It is not planned to ship it in an own package or to publish it on npm.
+
+### Currently supported
+
+- Receiving / Sending Text messages
+- Uploading Images
+- Receiving / Sending Attachments
+- Reacting to messages

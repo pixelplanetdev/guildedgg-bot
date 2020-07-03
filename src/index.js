@@ -57,4 +57,13 @@ guilded.on('message', (msg) => {
         //nothing
     }
   }
+
+  // react on all messages of specific user with emoji
+  // emojiId gt taken from browser dev tools
+  if (msg.user.id === 'GmjQ1Vgd') {
+    msg.react(222919);
+  }
+  if (msg.user.id === '64vKYJBd') {
+    msg.react(222920);
+  }
 });

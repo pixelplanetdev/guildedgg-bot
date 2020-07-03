@@ -145,10 +145,10 @@ class Guilded extends EventEmitter {
       const user = users.getUser(createdBy);
       const msgm = new Message(message, channel, guild, user);
       if (msgm.attachments.length) {
-        this.log(`Received: ${user.name}: ${msgm.text} with ${msgm.attachments.length} attachments:`);
+        this.log(`Received: ${user.name} / ${user.id}: ${msgm.text} with ${msgm.attachments.length} attachments:`);
         msgm.attachments.forEach((att) => this.log(att));
       } else {
-        this.log(`Received: ${user.name}: ${msgm.text}`);
+        this.log(`Received: ${user.name} / ${user.id}: ${msgm.text}`);
       }
       this.emit('message', msgm);
     });

@@ -1,6 +1,9 @@
-import { v4 as uuidv4 } from 'uuid';
+import fetch from 'node-fetch';
 
+import { v4 as uuidv4 } from 'uuid';
 import sessionData, { USER_AGENT } from './session';
+
+const REFERER = 'https://www.guilded.gg';
 
 /*
  * recursively parsing nodes
@@ -185,6 +188,27 @@ class Message {
         }
       ],
       object: 'text'
+    }
+  }
+
+  async react(emojiId) {
+    if (this.channel && this.id) {
+      const url = `${this.channel.chanURL}/messages/${this.id}/reactions/${emojiId}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Content-Type': 'application/json',
+          'Origin': REFERER,
+          'Referer': REFERER,
+          'User-Agent': USER_AGENT,
+          'Cookie': sessionData.cookies,
+          'guilded-client-id': sessionData.clientId,
+        },
+      });
+      if (response.status >= 300) {
+        console.log('Error on reacting to message', await response.text());
+      }
     }
   }
 
