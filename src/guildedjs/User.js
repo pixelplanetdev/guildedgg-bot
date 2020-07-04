@@ -10,7 +10,7 @@ class Users {
     if (this.users.has(id)) {
       return;
     }
-    console.log(`Got user ${data.name} - ${id}`);
+    // console.log(`Got user ${data.name} - ${id}`);
     this.users.set(id, data);
     return data;
   }

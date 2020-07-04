@@ -1,9 +1,8 @@
 # Basic guilded.gg Bot
 
-This is just a test to run a bot on guilded.gg.
+This is just a test to run a bot for [pixelplanet.fun](https://pixelplanet.fun)  on guilded.gg.
 All guild and channel and user informations are being fetched.
 Currently its possible to answer to basic messages, to get images and to post images
-
 This porject will be obsolete as soon as guilded provides their own bot libraries.
 
 ## Building and Running
@@ -24,3 +23,4 @@ It is not planned to ship it in an own package or to publish it on npm.
 - Uploading Images
 - Receiving / Sending Attachments
 - Reacting to messages
+- replying with an on-site screenshot to pixelplanet.fun URLs

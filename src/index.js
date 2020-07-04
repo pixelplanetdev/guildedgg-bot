@@ -1,6 +1,7 @@
 import Guilded from './guildedjs';
 
 import { drawText } from './commands/draw';
+import { parseCanvasLinks } from './pixelplanet';
 
 const email = process.argv[2];
 const password = process.argv[3];
@@ -60,10 +61,15 @@ guilded.on('message', (msg) => {
 
   // react on all messages of specific user with emoji
   // emojiId gt taken from browser dev tools
+  /*
   if (msg.user.id === 'GmjQ1Vgd') {
     msg.react(222919);
   }
   if (msg.user.id === '64vKYJBd') {
     msg.react(222920);
   }
+  */
+
+  // reply to pixelplanet.fun urls
+  parseCanvasLinks(msg);
 });

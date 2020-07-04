@@ -2,12 +2,19 @@ module.exports = {
   target: 'node',
   entry: './src/index.js',
   mode: 'production',
+  node: {
+    __dirname: false,
+  },
   module: {
     rules: [
       {
         test: /\.(js)$/,
         exclude: /node_modules/,
         use: ['babel-loader']
+      },
+      {
+        test: /\.node$/,
+        loader: 'node-loader',
       }
     ]
   },
